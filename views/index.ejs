@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exam Tracker</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+  <div class="navbar-container">
+    <div class="nav-left">
+      <h1>📚 Exam Tracker</h1>
+    </div>
+
+    <div id="hoverSubjectName" class="hover-subject-name"></div>
+
+    <div class="navbar-actions">
+      <!-- Circular Progress in Navbar -->
+      <div class="circular-progress" title="Overall Progress">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+          <path class="circle-bg"
+                d="M18 2.0845
+                   a 15.9155 15.9155 0 0 1 0 31.831
+                   a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="circle"
+                stroke-dasharray="<%= overallProgress %>, 100"
+                d="M18 2.0845
+                   a 15.9155 15.9155 0 0 1 0 31.831
+                   a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <text x="18" y="20.35" class="percentage"><%= overallProgress %>%</text>
+        </svg>
+      </div>
+
+      <button class="nav-btn" onclick="toggleModal('addSubjectModal')">➕ Add Subject</button>
+      <button class="nav-btn" onclick="toggleModal('addTopicModal')">📝 Add Topic</button>
+    </div>
+  </div>
+</nav>
+
+  
+  <main class="container">
+    <!-- Subject Cards -->
+    <% subjects.forEach(subject => {
+      const diffDays = subject.daysRemaining >= 0 ? subject.daysRemaining : 0;
+      const percent = progress[subject.id] || 0;
+      const subjectTopics = topics.filter(t => t.subject_id === subject.id);
+
+      let formattedExamDate = 'Not set';
+      if (subject.exam_date) {
+        const examDate = new Date(subject.exam_date);
+        if (!isNaN(examDate)) {
+          const options = { year: 'numeric', month: 'short', day: 'numeric' };
+          formattedExamDate = examDate.toLocaleDateString('en-US', options);
+        }
+      }
+    %>
+    <div class="card">
+      <div class="card-header">
+        <h3><%= subject.name %></h3>
+        <span class="badge">Exam in <%= diffDays %> day<%= diffDays === 1 ? '' : 's' %></span>
+      </div>
+      <div class="exam-date">📅 <%= formattedExamDate %></div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner bg-blue" style="width: <%= percent %>%"></div>
+      </div>
+      <small>Progress: <%= percent %>%</small>
+
+      <ul class="topic-list">
+        <% subjectTopics.forEach(topic => { %>
+          <li class="topic-item <%= topic.status === 'done' ? 'done' : '' %>">
+            <span><%= topic.title %></span>
+            <form action="/topics/toggle" method="POST">
+              <input type="hidden" name="topic_id" value="<%= topic.id %>" />
+              <input type="hidden" name="status" value="<%= topic.status === 'done' ? 'todo' : 'done' %>" />
+              <button class="toggle-btn <%= topic.status === 'done' ? 'secondary' : 'primary' %>" 
+                      data-topic-id="<%= topic.id %>" 
+                      data-status="<%= topic.status === 'done' ? 'todo' : 'done' %>">
+                <%= topic.status === 'done' ? '🔄 Mark as Todo' : '✅ Mark as Done' %>
+              </button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+    <% }) %>
+  </main>
+
+  <!-- Add Subject Modal -->
+  <div id="addSubjectModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="toggleModal('addSubjectModal')">&times;</span>
+      <h3>Add New Subject</h3>
+      <form action="/subjects/add" method="POST">
+        <input type="text" name="name" placeholder="Subject Name" required />
+        <input type="date" name="exam_date" required />
+        <button type="submit">Add Subject</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Topic Modal -->
+  <div id="addTopicModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="toggleModal('addTopicModal')">&times;</span>
+      <h3>Add New Topic</h3>
+      <form action="/topics/add" method="POST">
+        <select name="subject_id" required>
+          <option value="" disabled selected>Select Subject</option>
+          <% subjects.forEach(subject => { %>
+            <option value="<%= subject.id %>"><%= subject.name %></option>
+          <% }) %>
+        </select>
+        <input type="text" name="title" placeholder="Topic Title" required />
+        <button type="submit">Add Topic</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
