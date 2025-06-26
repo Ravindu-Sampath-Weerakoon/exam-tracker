@@ -23,7 +23,7 @@ Exam Tracker is a simple Node.js web application for tracking your exam subjects
 ### Installation
 1. Clone the repository:
    ```sh
-   git clone [https://github.com/your-username/exam-tracker.git](https://github.com/Ravindu-Sampath-Weerakoon/exam-tracker.git
+   git clone https://github.com/Ravindu-Sampath-Weerakoon/exam-tracker.git
    cd exam-tracker
    ```
 2. Install dependencies:
