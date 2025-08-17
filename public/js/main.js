@@ -1,3 +1,8 @@
+function toggleModal(id) {
+  const modal = document.getElementById(id);
+  modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.toggle-btn').forEach(button => {
     button.addEventListener('click', async (e) => {
@@ -22,9 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function toggleModal(id) {
-  const modal = document.getElementById(id);
-  modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+function openEditSubjectModal(id, name, exam_date) {
+  document.getElementById('edit-subject-id').value = id;
+  document.getElementById('edit-subject-name').value = name;
+  document.getElementById('edit-subject-exam-date').value = new Date(exam_date).toISOString().slice(0, 10);
+  toggleModal('editSubjectModal');
+}
+
+function openEditTopicModal(id, title) {
+  document.getElementById('edit-topic-id').value = id;
+  document.getElementById('edit-topic-title').value = title;
+  toggleModal('editTopicModal');
 }
 
 

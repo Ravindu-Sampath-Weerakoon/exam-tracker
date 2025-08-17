@@ -139,6 +139,7 @@ a:focus, button:focus, input:focus, select:focus {
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
   font-size: 0.9rem;
+  font-weight: bold;
 }
 .exam-date {
   font-size: 0.9rem;
@@ -249,4 +250,14 @@ a:focus, button:focus, input:focus, select:focus {
 }
 .close:hover {
   color: #ff7675;
+}
+
+.delete-btn-style {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+}
+
+.delete-btn-style:hover {
+  background-color: #d9534f;
+  border-color: #d43f3a;
 }

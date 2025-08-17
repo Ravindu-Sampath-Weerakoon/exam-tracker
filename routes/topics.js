@@ -25,4 +25,45 @@ router.post('/toggle', (req, res) => {
   });
 });
 
+
+// Route: Update a topic
+// POST /topics/update
+router.post('/update', (req, res) => {
+  const { id, title } = req.body;
+
+  if (!id || !title) {
+    return res.status(400).send('ID and title are required.');
+  }
+
+  const query = 'UPDATE topics SET title = ? WHERE id = ?';
+  db.query(query, [title, id], (err) => {
+    if (err) {
+      console.error('Database error when updating topic:', err);
+      return res.status(500).send('Server error');
+    }
+
+    res.redirect('/');
+  });
+});
+
+// Route: Delete a topic
+// POST /topics/delete
+router.post('/delete', (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).send('ID is required.');
+  }
+
+  const query = 'DELETE FROM topics WHERE id = ?';
+  db.query(query, [id], (err) => {
+    if (err) {
+      console.error('Database error when deleting topic:', err);
+      return res.status(500).send('Server error');
+    }
+
+    res.redirect('/');
+  });
+});
+
 module.exports = router;
