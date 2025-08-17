@@ -1,6 +1,12 @@
-node_modules/
+# Environment variables
 .env
-.DS_Store
-*.log
+
+# Dependencies
+/node_modules
+
 npm-debug.log*
-.env.*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage reports
+/coverage
