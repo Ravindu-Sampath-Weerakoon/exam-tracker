@@ -65,3 +65,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    for (let i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.dropdown .dropbtn').forEach(button => {
+    button.addEventListener('click', function(event) {
+      event.stopPropagation(); // Stop event from propagating to window.onclick
+      const dropdownContent = this.nextElementSibling;
+      dropdownContent.classList.toggle('show');
+    });
+  });
+});
