@@ -21,7 +21,7 @@ app.use(express.static('public'));
 // Home route handled here
 const db = require('./db');
 app.get('/', (req, res) => {
-  const subjectQuery = 'SELECT * FROM subjects';
+  const subjectQuery = 'SELECT * FROM subjects ORDER BY exam_date ASC';
   db.query(subjectQuery, (err, subjects) => {
     if (err) throw err;
 
