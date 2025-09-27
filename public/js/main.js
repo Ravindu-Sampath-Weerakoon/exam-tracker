@@ -40,6 +40,14 @@ function openEditTopicModal(id, title) {
   toggleModal('editTopicModal');
 }
 
+function openAddTopicModalForSubject(subjectId) {
+  const addTopicSubjectIdInput = document.getElementById('addTopicSubjectId');
+  if (addTopicSubjectIdInput) {
+    addTopicSubjectIdInput.value = subjectId;
+  }
+  toggleModal('addTopicModal');
+}
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const subjectCards = document.querySelectorAll(".card");
