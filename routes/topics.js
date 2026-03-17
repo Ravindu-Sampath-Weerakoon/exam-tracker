@@ -7,7 +7,10 @@ router.post('/add', (req, res) => {
   const { subject_id, title } = req.body;
   const query = 'INSERT INTO topics (subject_id, title, status) VALUES (?, ?, ?)';
   db.query(query, [subject_id, title, 'todo'], (err) => {
-    if (err) throw err;
+    if (err) {
+      console.error('Database error when adding topic:', err);
+      return res.status(500).send('Server error');
+    }
     res.redirect('/');
   });
 });

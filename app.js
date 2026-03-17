@@ -2,13 +2,11 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
+const checkAndInit = require('./scripts/init-db');
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
-
-const subjectsRouter = require('./routes/subjects');
-const topicsRouter = require('./routes/topics');
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -16,18 +14,26 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(express.static('public'));
+// Removed redundant app.use(express.static('public'));
 
-// Home route handled here
+const subjectsRouter = require('./routes/subjects');
+const topicsRouter = require('./routes/topics');
 const db = require('./db');
+
 app.get('/', (req, res) => {
   const subjectQuery = 'SELECT * FROM subjects ORDER BY exam_date ASC';
   db.query(subjectQuery, (err, subjects) => {
-    if (err) throw err;
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).send('Internal Server Error');
+    }
 
     const topicQuery = 'SELECT * FROM topics';
     db.query(topicQuery, (err, topics) => {
-      if (err) throw err;
+      if (err) {
+        console.error('Database query error:', err);
+        return res.status(500).send('Internal Server Error');
+      }
 
       const progress = {};
       let totalDone = 0;
@@ -57,10 +63,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// Use routes
 app.use('/subjects', subjectsRouter);
 app.use('/topics', topicsRouter);
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+// Initialize database and then start server
+checkAndInit().then(() => {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}).catch(err => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
 });
