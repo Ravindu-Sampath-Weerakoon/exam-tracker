@@ -36,21 +36,13 @@
       <button class="nav-btn" onclick="toggleCalendarModal()">📅 Calendar</button>
       <button class="nav-btn" onclick="toggleModal('addSubjectModal')">➕ Add Subject</button>
       
-      <!-- Hidden Subjects Dropdown -->
+      <!-- Navbar Dropdown Menu -->
       <div class="dropdown">
         <button class="dropbtn">...</button>
         <div class="dropdown-content">
-          <p style="padding: 12px 16px; color: #888; font-size: 0.8rem; border-bottom: 1px solid #444; margin: 0;">Hidden Subjects</p>
-          <% if (hiddenSubjects.length === 0) { %>
-            <a href="#" style="font-size: 0.8rem; color: #666;">No hidden subjects</a>
-          <% } else { %>
-            <% hiddenSubjects.forEach(s => { %>
-              <form action="/subjects/unhide" method="POST" id="unhide-form-<%= s.id %>">
-                <input type="hidden" name="id" value="<%= s.id %>">
-                <a href="#" onclick="document.getElementById('unhide-form-<%= s.id %>').submit(); return false;"><%= s.name %> (Unhide)</a>
-              </form>
-            <% }) %>
-          <% } %>
+          <p style="padding: 12px 16px; color: #888; font-size: 0.8rem; border-bottom: 1px solid #444; margin: 0; font-weight: bold;">Menu</p>
+          <a href="#" onclick="toggleModal('hiddenSubjectsModal'); return false;">👁️ Hidden Subjects</a>
+          <!-- Future Menu Items -->
         </div>
       </div>
     </div>
@@ -206,6 +198,32 @@
       <div class="monthly-exams">
         <h4>Exams this month</h4>
         <div id="monthlyExamList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Subjects Modal -->
+  <div id="hiddenSubjectsModal" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+      <span class="close" onclick="toggleModal('hiddenSubjectsModal')">&times;</span>
+      <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid #444; padding-bottom: 0.5rem;">👁️ Hidden Subjects</h3>
+      
+      <div id="hiddenSubjectsList">
+        <% if (hiddenSubjects.length === 0) { %>
+          <p style="text-align: center; color: #666; font-style: italic; padding: 2rem 0;">No subjects are currently hidden.</p>
+        <% } else { %>
+          <ul style="list-style: none; padding: 0;">
+            <% hiddenSubjects.forEach(s => { %>
+              <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; background-color: #262626; border-radius: 8px; margin-bottom: 0.5rem;">
+                <span style="font-weight: 500;"><%= s.name %></span>
+                <form action="/subjects/unhide" method="POST" style="margin: 0;">
+                  <input type="hidden" name="id" value="<%= s.id %>">
+                  <button type="submit" class="unhide-btn" style="padding: 5px 12px; font-size: 0.8rem;">Unhide</button>
+                </form>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
       </div>
     </div>
   </div>

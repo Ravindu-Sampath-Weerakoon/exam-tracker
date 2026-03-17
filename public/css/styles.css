@@ -499,6 +499,44 @@ a:focus, button:focus, input:focus, select:focus {
   background-color: #333;
 }
 
+/* Dropdown Item with Action Button */
+.dropdown-item-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.dropdown-item-flex:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item-flex span {
+  font-size: 0.85rem;
+  color: #eee;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.unhide-btn {
+  background-color: #0984e3;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.unhide-btn:hover {
+  background-color: #00a8ff;
+}
+
 /* Show the dropdown menu (when JS is enabled) */
 .dropdown-content.show {
   display: block;
