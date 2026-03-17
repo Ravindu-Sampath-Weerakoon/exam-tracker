@@ -1,3 +1,107 @@
+// Calendar Logic
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
+function renderCalendar(month, year) {
+  const monthDisplay = document.getElementById('monthDisplay');
+  const calendarGrid = document.getElementById('calendarGrid');
+  const monthlyExamList = document.getElementById('monthlyExamList');
+  if (!monthDisplay || !calendarGrid || !monthlyExamList) return;
+
+  calendarGrid.innerHTML = '';
+  monthlyExamList.innerHTML = '';
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  monthDisplay.textContent = `${monthNames[month]} ${year}`;
+
+  // Empty cells for days before the 1st
+  for (let i = 0; i < firstDay; i++) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.classList.add('calendar-day', 'empty');
+    calendarGrid.appendChild(emptyDiv);
+  }
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const monthExams = [];
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayDiv = document.createElement('div');
+    dayDiv.classList.add('calendar-day');
+    dayDiv.textContent = day;
+
+    const checkDate = new Date(year, month, day);
+    
+    if (checkDate.getTime() === today.getTime()) {
+      dayDiv.classList.add('today');
+    }
+
+    // Highlight exams
+    const examsOnThisDay = examDates.filter(e => {
+      const eDate = new Date(e.date);
+      return eDate.getFullYear() === year && eDate.getMonth() === month && eDate.getDate() === day;
+    });
+
+    if (examsOnThisDay.length > 0) {
+      dayDiv.classList.add('has-exam');
+      dayDiv.setAttribute('data-subject', examsOnThisDay.map(e => e.name).join(', '));
+      examsOnThisDay.forEach(e => {
+        monthExams.push({ ...e, day });
+      });
+    }
+
+    calendarGrid.appendChild(dayDiv);
+  }
+
+  // Populate Monthly Exam List
+  if (monthExams.length > 0) {
+    monthExams.sort((a, b) => a.day - b.day).forEach(e => {
+      const item = document.createElement('div');
+      item.classList.add('exam-list-item');
+      item.innerHTML = `
+        <span class="exam-list-date">${monthNames[month]} ${e.day}</span>
+        <span class="exam-list-name">${e.name}</span>
+      `;
+      monthlyExamList.appendChild(item);
+    });
+  } else {
+    monthlyExamList.innerHTML = '<p style="font-size: 0.85rem; color: #666;">No exams scheduled this month.</p>';
+  }
+}
+
+function toggleCalendarModal() {
+  toggleModal('calendarModal');
+  renderCalendar(currentMonth, currentYear);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Calendar rendering moved to toggleCalendarModal function
+  
+  document.getElementById('prevMonth')?.addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    renderCalendar(currentMonth, currentYear);
+  });
+
+  document.getElementById('nextMonth')?.addEventListener('click', () => {
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+    renderCalendar(currentMonth, currentYear);
+  });
+});
+
 function toggleModal(id) {
   const modal = document.getElementById(id);
   modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
@@ -34,9 +138,10 @@ function openEditSubjectModal(id, name, exam_date) {
   toggleModal('editSubjectModal');
 }
 
-function openEditTopicModal(id, title) {
+function openEditTopicModal(id, title, description) {
   document.getElementById('edit-topic-id').value = id;
   document.getElementById('edit-topic-title').value = title;
+  document.getElementById('edit-topic-description').value = description || '';
   toggleModal('editTopicModal');
 }
 

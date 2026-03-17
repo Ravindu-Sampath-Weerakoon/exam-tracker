@@ -21,14 +21,17 @@ const topicsRouter = require('./routes/topics');
 const db = require('./db');
 
 app.get('/', (req, res) => {
-  const subjectQuery = 'SELECT * FROM subjects ORDER BY exam_date ASC';
-  db.query(subjectQuery, (err, subjects) => {
+  const subjectQuery = 'SELECT s.*, (SELECT 1 FROM hidden_subjects hs WHERE hs.subject_id = s.id) AS is_hidden FROM subjects s ORDER BY exam_date ASC';
+  db.query(subjectQuery, (err, allSubjects) => {
     if (err) {
       console.error('Database query error:', err);
       return res.status(500).send('Internal Server Error');
     }
 
-    const topicQuery = 'SELECT * FROM topics';
+    const subjects = allSubjects.filter(s => !s.is_hidden);
+    const hiddenSubjects = allSubjects.filter(s => s.is_hidden);
+
+    const topicQuery = 'SELECT t.*, td.description FROM topics t LEFT JOIN topic_descriptions td ON t.id = td.topic_id';
     db.query(topicQuery, (err, topics) => {
       if (err) {
         console.error('Database query error:', err);
@@ -58,7 +61,7 @@ app.get('/', (req, res) => {
 
       const overallProgress = totalTopics > 0 ? Math.round((totalDone / totalTopics) * 100) : 0;
 
-      res.render('index', { subjects, topics, progress, overallProgress });
+      res.render('index', { subjects, hiddenSubjects, topics, progress, overallProgress });
     });
   });
 });
