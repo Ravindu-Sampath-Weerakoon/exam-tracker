@@ -32,20 +32,32 @@ router.post('/toggle', (req, res) => {
 // Route: Update a topic
 // POST /topics/update
 router.post('/update', (req, res) => {
-  const { id, title } = req.body;
+  const { id, title, description } = req.body;
 
   if (!id || !title) {
     return res.status(400).send('ID and title are required.');
   }
 
-  const query = 'UPDATE topics SET title = ? WHERE id = ?';
-  db.query(query, [title, id], (err) => {
+  const updateTopicQuery = 'UPDATE topics SET title = ? WHERE id = ?';
+  db.query(updateTopicQuery, [title, id], (err) => {
     if (err) {
       console.error('Database error when updating topic:', err);
       return res.status(500).send('Server error');
     }
 
-    res.redirect('/');
+    // Handle description in the separate table
+    if (description !== undefined) {
+      const updateDescQuery = 'INSERT INTO topic_descriptions (topic_id, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE description = ?';
+      db.query(updateDescQuery, [id, description, description], (err) => {
+        if (err) {
+          console.error('Database error when updating topic description:', err);
+          return res.status(500).send('Server error');
+        }
+        res.redirect('/');
+      });
+    } else {
+      res.redirect('/');
+    }
   });
 });
 

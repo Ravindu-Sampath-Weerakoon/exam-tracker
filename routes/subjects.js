@@ -71,5 +71,37 @@ router.post('/delete', (req, res) => {
   });
 });
 
+// Route: Hide a subject
+// POST /subjects/hide
+router.post('/hide', (req, res) => {
+  const { id } = req.body;
+  if (!id) return res.status(400).send('ID is required.');
+
+  const query = 'INSERT INTO hidden_subjects (subject_id) VALUES (?) ON DUPLICATE KEY UPDATE subject_id = subject_id';
+  db.query(query, [id], (err) => {
+    if (err) {
+      console.error('Database error when hiding subject:', err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/');
+  });
+});
+
+// Route: Unhide a subject
+// POST /subjects/unhide
+router.post('/unhide', (req, res) => {
+  const { id } = req.body;
+  if (!id) return res.status(400).send('ID is required.');
+
+  const query = 'DELETE FROM hidden_subjects WHERE subject_id = ?';
+  db.query(query, [id], (err) => {
+    if (err) {
+      console.error('Database error when unhiding subject:', err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/');
+  });
+});
+
 module.exports = router;
 

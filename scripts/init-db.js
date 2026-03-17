@@ -31,8 +31,10 @@ async function checkAndInit() {
     // Check if tables exist
     const [tables] = await connection.query("SHOW TABLES LIKE 'subjects'");
     const [topicsTable] = await connection.query("SHOW TABLES LIKE 'topics'");
+    const [descriptionsTable] = await connection.query("SHOW TABLES LIKE 'topic_descriptions'");
+    const [hiddenTable] = await connection.query("SHOW TABLES LIKE 'hidden_subjects'");
 
-    if (tables.length === 0 || topicsTable.length === 0) {
+    if (tables.length === 0 || topicsTable.length === 0 || descriptionsTable.length === 0 || hiddenTable.length === 0) {
       const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -62,6 +64,23 @@ async function checkAndInit() {
             subject_id INT NOT NULL,
             title VARCHAR(255) NOT NULL,
             status ENUM('todo', 'done') DEFAULT 'todo',
+            FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+          )
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS topic_descriptions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            topic_id INT NOT NULL UNIQUE,
+            description TEXT,
+            FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE
+          )
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS hidden_subjects (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            subject_id INT NOT NULL UNIQUE,
             FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
           )
         `);
