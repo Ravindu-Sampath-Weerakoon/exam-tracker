@@ -96,12 +96,10 @@
 
       <ul class="topic-list">
         <% subjectTopics.forEach(topic => { %>
-          <li class="topic-item <%= topic.status === 'done' ? 'done' : '' %>">
+          <li class="topic-item <%= topic.status === 'done' ? 'done' : '' %>" data-topic-id="<%= topic.id %>">
             <div class="topic-content">
               <span class="topic-title"><%= topic.title %></span>
-              <% if (topic.description) { %>
-                <p class="topic-description"><%= topic.description %></p>
-              <% } %>
+              <p class="topic-description"><%= topic.description || '' %></p>
             </div>
             <div class="topic-actions">
               <button class="nav-btn" onclick="openEditTopicModal('<%= topic.id %>', '<%= topic.title %>', '<%= (topic.description || '').replace(/'/g, "\\'") %>')">☰</button>

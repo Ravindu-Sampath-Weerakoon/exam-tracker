@@ -53,10 +53,10 @@ router.post('/update', (req, res) => {
           console.error('Database error when updating topic description:', err);
           return res.status(500).send('Server error');
         }
-        res.redirect('/');
+        res.status(200).json({ success: true, message: 'Topic updated successfully' });
       });
     } else {
-      res.redirect('/');
+      res.status(200).json({ success: true, message: 'Topic title updated successfully' });
     }
   });
 });

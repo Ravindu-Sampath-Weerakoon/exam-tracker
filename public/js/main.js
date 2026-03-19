@@ -153,6 +153,49 @@ function openAddTopicModalForSubject(subjectId) {
   toggleModal('addTopicModal');
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const editTopicForm = document.querySelector('#editTopicModal form');
+  if (editTopicForm) {
+    editTopicForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-topic-id').value;
+      const title = document.getElementById('edit-topic-title').value;
+      const description = document.getElementById('edit-topic-description').value;
+
+      try {
+        const response = await fetch('/topics/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `id=${id}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`
+        });
+
+        if (response.ok) {
+          // Update the DOM
+          const topicItem = document.querySelector(`.topic-item[data-topic-id="${id}"]`);
+          if (topicItem) {
+            topicItem.querySelector('.topic-title').textContent = title;
+            topicItem.querySelector('.topic-description').textContent = description;
+            
+            // Also update the onclick attribute of the edit button to reflect the new values
+            const editBtn = topicItem.querySelector('button[onclick^="openEditTopicModal"]');
+            if (editBtn) {
+              const escapedDesc = description.replace(/'/g, "\\'");
+              editBtn.setAttribute('onclick', `openEditTopicModal('${id}', '${title}', '${escapedDesc}')`);
+            }
+          }
+          toggleModal('editTopicModal');
+        } else {
+          alert('Failed to update topic.');
+        }
+      } catch (err) {
+        console.error('Error updating topic:', err);
+        alert('An error occurred.');
+      }
+    });
+  }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   const subjectCards = document.querySelectorAll(".card");
