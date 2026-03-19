@@ -1,3 +1,23 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('subjectSearch');
+  const subjectCards = document.querySelectorAll('.card');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
+
+      subjectCards.forEach(card => {
+        const subjectName = card.querySelector('h3').textContent.toLowerCase();
+        if (subjectName.includes(term)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  }
+});
+
 // Calendar Logic
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
@@ -81,8 +101,6 @@ function toggleCalendarModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Calendar rendering moved to toggleCalendarModal function
-  
   document.getElementById('prevMonth')?.addEventListener('click', () => {
     currentMonth--;
     if (currentMonth < 0) {
@@ -104,32 +122,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function toggleModal(id) {
   const modal = document.getElementById(id);
+  if (!modal) return;
   modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.toggle-btn').forEach(button => {
-    button.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const topicId = button.getAttribute('data-topic-id');
-      const newStatus = button.getAttribute('data-status');
+  document.querySelectorAll('.topic-toggle-btn').forEach(button => {
+    attachToggleListener(button);
+  });
+});
 
+function attachToggleListener(button) {
+  button.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const topicId = button.getAttribute('data-topic-id');
+    const currentStatus = button.getAttribute('data-status');
+
+    try {
       const res = await fetch('/topics/toggle', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: `topic_id=${topicId}&status=${newStatus}`
+        body: `topic_id=${topicId}&status=${currentStatus}`
       });
 
       if (res.ok) {
-        location.reload();
+        const topicItem = button.closest('.topic-item');
+        const isNowDone = currentStatus === 'done';
+        
+        topicItem.classList.toggle('done', isNowDone);
+        button.setAttribute('data-status', isNowDone ? 'todo' : 'done');
+        button.setAttribute('title', isNowDone ? 'Undo' : 'Mark as done');
+        button.className = `topic-toggle-btn ${isNowDone ? 'done' : 'todo'}`;
+
+        updateProgress(button.closest('.card'));
       } else {
         alert('Failed to update topic.');
       }
-    });
+    } catch (err) {
+      console.error('Error toggling topic:', err);
+    }
   });
-});
+}
+
+function updateProgress(card) {
+  if (!card) return;
+
+  const topics = card.querySelectorAll('.topic-item');
+  const doneTopics = card.querySelectorAll('.topic-item.done');
+  const total = topics.length;
+  const done = doneTopics.length;
+  const remaining = total - done;
+  const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const progressBar = card.querySelector('.progress-bar-inner');
+  const progressText = card.querySelector('small');
+  if (progressBar) progressBar.style.width = `${percent}%`;
+  if (progressText) progressText.textContent = `Progress: ${percent}%`;
+
+  const countDone = card.querySelector('.count-done');
+  const countRem = card.querySelector('.count-rem');
+  const countTotal = card.querySelector('.count-total');
+  if (countDone) countDone.textContent = done;
+  if (countRem) countRem.textContent = remaining;
+  if (countTotal) countTotal.textContent = total;
+
+  const allTopics = document.querySelectorAll('.topic-item').length;
+  const allDone = document.querySelectorAll('.topic-item.done').length;
+  const overallPercent = allTopics > 0 ? Math.round((allDone / allTopics) * 100) : 0;
+
+  const circle = document.querySelector('.navbar .circle');
+  const navPercentText = document.querySelector('.navbar .nav-percent');
+  if (circle) circle.setAttribute('stroke-dasharray', `${overallPercent}, 100`);
+  if (navPercentText) navPercentText.textContent = `${overallPercent}%`;
+}
 
 function openEditSubjectModal(id, name, exam_date) {
   document.getElementById('edit-subject-id').value = id;
@@ -154,6 +221,75 @@ function openAddTopicModalForSubject(subjectId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const addTopicForm = document.getElementById('addTopicForm');
+  if (addTopicForm) {
+    addTopicForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const subjectId = document.getElementById('addTopicSubjectId').value;
+      const titleInput = addTopicForm.querySelector('input[name="title"]');
+      const title = titleInput.value;
+
+      try {
+        const response = await fetch('/topics/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `subject_id=${subjectId}&title=${encodeURIComponent(title)}`
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const card = document.getElementById(`subject-card-${subjectId}`);
+            const topicList = card.querySelector('.topic-list');
+            
+            const li = document.createElement('li');
+            li.className = 'topic-item';
+            li.setAttribute('data-topic-id', data.id);
+            li.innerHTML = `
+              <div class="topic-content">
+                <span class="topic-title">${data.title}</span>
+                <p class="topic-description"></p>
+              </div>
+              <div class="topic-actions">
+                <button class="topic-action-btn" onclick="openEditTopicModal('${data.id}', '${data.title}', '')" title="Edit Topic">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <form action="/topics/delete" method="POST" style="display: inline;">
+                  <input type="hidden" name="id" value="${data.id}">
+                  <button type="submit" class="topic-action-btn delete" onclick="return confirm('Are you sure you want to delete this topic?')" title="Delete Topic">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </form>
+                <form action="/topics/toggle" method="POST" style="display: inline;">
+                  <input type="hidden" name="topic_id" value="${data.id}" />
+                  <input type="hidden" name="status" value="done" />
+                  <button class="topic-toggle-btn todo" 
+                          data-topic-id="${data.id}" 
+                          data-status="done"
+                          title="Mark as done">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </button>
+                </form>
+              </div>
+            `;
+            
+            topicList.appendChild(li);
+            attachToggleListener(li.querySelector('.topic-toggle-btn'));
+            updateProgress(card);
+            titleInput.value = '';
+            toggleModal('addTopicModal');
+          }
+        }
+      } catch (err) {
+        console.error('Error adding topic:', err);
+      }
+    });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   const editTopicForm = document.querySelector('#editTopicModal form');
   if (editTopicForm) {
     editTopicForm.addEventListener('submit', async (e) => {
@@ -172,13 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (response.ok) {
-          // Update the DOM
           const topicItem = document.querySelector(`.topic-item[data-topic-id="${id}"]`);
           if (topicItem) {
             topicItem.querySelector('.topic-title').textContent = title;
             topicItem.querySelector('.topic-description').textContent = description;
-            
-            // Also update the onclick attribute of the edit button to reflect the new values
             const editBtn = topicItem.querySelector('button[onclick^="openEditTopicModal"]');
             if (editBtn) {
               const escapedDesc = description.replace(/'/g, "\\'");
@@ -191,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         console.error('Error updating topic:', err);
-        alert('An error occurred.');
       }
     });
   }
@@ -203,20 +335,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   subjectCards.forEach(card => {
     const subjectName = card.querySelector("h3")?.textContent;
-
-    card.addEventListener("mouseenter", () => {
-      hoverSubjectName.textContent = subjectName;
-    });
-
-    card.addEventListener("mouseleave", () => {
-      hoverSubjectName.textContent = "";
-    });
+    card.addEventListener("mouseenter", () => { hoverSubjectName.textContent = subjectName; });
+    card.addEventListener("mouseleave", () => { hoverSubjectName.textContent = ""; });
   });
 });
 
-// Close the dropdown if the user clicks outside of it
+function toggleFilter(subjectId, button) {
+  const card = document.getElementById(`subject-card-${subjectId}`);
+  if (!card) return;
+
+  const isActive = card.classList.toggle('filter-active');
+  button.classList.toggle('active', isActive);
+  
+  // Update title to reflect state
+  button.setAttribute('title', isActive ? 'Show All Topics' : 'Show Remaining Only');
+}
+
+function toggleCard(subjectId) {
+  const card = document.getElementById(`subject-card-${subjectId}`);
+  if (card) {
+    const isFolding = !card.classList.contains('collapsed');
+    card.classList.toggle('collapsed');
+    if (isFolding) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
 window.onclick = function(event) {
-  if (!event.target.matches('.dropbtn')) {
+  if (!event.target.closest('.dropbtn')) {
     var dropdowns = document.getElementsByClassName("dropdown-content");
     for (let i = 0; i < dropdowns.length; i++) {
       var openDropdown = dropdowns[i];
@@ -230,8 +377,11 @@ window.onclick = function(event) {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.dropdown .dropbtn').forEach(button => {
     button.addEventListener('click', function(event) {
-      event.stopPropagation(); // Stop event from propagating to window.onclick
+      event.stopPropagation();
       const dropdownContent = this.nextElementSibling;
+      document.querySelectorAll('.dropdown-content').forEach(content => {
+        if (content !== dropdownContent) content.classList.remove('show');
+      });
       dropdownContent.classList.toggle('show');
     });
   });
