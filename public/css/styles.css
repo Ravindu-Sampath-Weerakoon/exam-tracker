@@ -9,6 +9,7 @@
   --text-dim: #848d97;
   --text-disabled: #484f58;
   --border-color: #30363d;
+  --surface-light: #21262d;
   --success: #238636;
   --danger: #f85149;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -719,52 +720,94 @@ small {
 }
 
 /* Calendar Styles */
-#calendarModal .modal-content {
-  max-width: 450px;
+.calendar-modal-wide {
+  max-width: 650px !important;
+  border-radius: 12px;
+  padding: 1.5rem !important;
+}
+
+.calendar-layout-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.calendar-left-side {
+  flex: 1.2;
+}
+
+.calendar-right-side {
+  flex: 1;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar for Right Side */
+.calendar-right-side::-webkit-scrollbar {
+  width: 4px;
+}
+
+.calendar-right-side::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-right-side::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
 }
 
 .calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .calendar-header h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--text-main);
 }
 
 .calendar-header .nav-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 6px;
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  color: var(--text-dim);
+  transition: all 0.2s;
+}
+
+.calendar-header .nav-btn:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-main);
 }
 
 .calendar-grid-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .calendar-grid-header div {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 600;
   text-transform: uppercase;
   color: var(--text-disabled);
-  letter-spacing: 0.05em;
+  opacity: 0.8;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 4px;
 }
 
 .calendar-day {
@@ -772,9 +815,9 @@ small {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-color);
-  border-radius: 8px;
-  font-size: 0.85rem;
+  background-color: transparent;
+  border-radius: 6px;
+  font-size: 0.8rem;
   color: var(--text-dim);
   border: 1px solid transparent;
   transition: all 0.2s;
@@ -791,60 +834,80 @@ small {
 }
 
 .calendar-day.today {
-  background-color: rgba(99, 102, 241, 0.1);
-  border-color: var(--primary-accent);
   color: var(--primary-accent);
   font-weight: 700;
+  background-color: rgba(99, 102, 241, 0.1);
 }
 
 .calendar-day.has-exam {
   background: var(--primary-accent);
   color: white;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .calendar-day.has-exam:hover {
   filter: brightness(1.1);
-  transform: translateY(-1px);
 }
 
-/* Monthly Exam List below Calendar */
+/* Monthly Exam List on the Right */
 .monthly-exams {
-  margin-top: 2rem;
-  border-top: 1px solid var(--border-color);
-  padding-top: 1.25rem;
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
 }
 
 .monthly-exams h4 {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   color: var(--text-disabled);
   letter-spacing: 0.05em;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  position: sticky;
+  top: 0;
+  background-color: var(--surface-color);
+  padding-bottom: 0.5rem;
 }
 
 .exam-list-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  background-color: var(--bg-color);
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--surface-light);
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
   border: 1px solid var(--border-color);
 }
 
 .exam-list-date {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--primary-accent);
 }
 
 .exam-list-name {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-main);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive Calendar */
+@media (max-width: 650px) {
+  .calendar-layout-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .calendar-modal-wide {
+    max-width: 90% !important;
+  }
+  .calendar-right-side {
+    max-height: none;
+    overflow-y: visible;
+  }
 }
 
 /* Dropdown */

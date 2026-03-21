@@ -70,7 +70,17 @@ function renderCalendar(month, year) {
 
     if (examsOnThisDay.length > 0) {
       dayDiv.classList.add('has-exam');
-      dayDiv.setAttribute('data-subject', examsOnThisDay.map(e => e.name).join(', '));
+      const subjectNames = examsOnThisDay.map(e => e.name).join(', ');
+      dayDiv.setAttribute('data-subject', subjectNames);
+      
+      // Combine all topics for the tooltip
+      const allTopics = examsOnThisDay.flatMap(e => e.topics || []);
+      if (allTopics.length > 0) {
+        dayDiv.setAttribute('title', `Subject: ${subjectNames}\nTopics:\n• ${allTopics.join('\n• ')}`);
+      } else {
+        dayDiv.setAttribute('title', `Subject: ${subjectNames}`);
+      }
+
       examsOnThisDay.forEach(e => {
         monthExams.push({ ...e, day });
       });
@@ -129,6 +139,18 @@ function toggleModal(id) {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.topic-toggle-btn').forEach(button => {
     attachToggleListener(button);
+  });
+
+  // Delegated listener for edit topic buttons
+  document.addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.edit-topic-btn');
+    if (editBtn) {
+      e.preventDefault();
+      const id = editBtn.getAttribute('data-id');
+      const title = editBtn.getAttribute('data-title');
+      const description = editBtn.getAttribute('data-description');
+      openEditTopicModal(id, title, description);
+    }
   });
 });
 
@@ -253,7 +275,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="topic-description"></p>
               </div>
               <div class="topic-actions">
-                <button class="topic-action-btn" onclick="openEditTopicModal('${data.id}', '${data.title}', '')" title="Edit Topic">
+                <button class="topic-action-btn edit-topic-btn" 
+                        data-id="${data.id}" 
+                        data-title="${data.title}" 
+                        data-description="" 
+                        title="Edit Topic">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
                 <form action="/topics/delete" method="POST" style="display: inline;">
@@ -312,10 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (topicItem) {
             topicItem.querySelector('.topic-title').textContent = title;
             topicItem.querySelector('.topic-description').textContent = description;
-            const editBtn = topicItem.querySelector('button[onclick^="openEditTopicModal"]');
+            const editBtn = topicItem.querySelector('.edit-topic-btn');
             if (editBtn) {
-              const escapedDesc = description.replace(/'/g, "\\'");
-              editBtn.setAttribute('onclick', `openEditTopicModal('${id}', '${title}', '${escapedDesc}')`);
+              editBtn.setAttribute('data-title', title);
+              editBtn.setAttribute('data-description', description);
             }
           }
           toggleModal('editTopicModal');
